@@ -1,24 +1,28 @@
 const http = require('http');
+const fs = require('fs');
+
 const port = 3000;
 
-//request - информация о запросе
-//response - отпарвка ответа
-
 const requestHandler = (request, response) => {
-  console.log(`url: ${request.url}`);
-  console.log(`method: ${request.method}`);
-  console.log(`user-agent: ${request.headers['user-agent']}`);
-  console.log(`user-agent: ${request.headers['user-agent']}`);
-  // console.log(request.headers);
+  if (request.method === 'POST') {
+    let data = '';
 
-  response.setHeader('UserId', 1);
-  response.setHeader('Content-Type', 'text/html; charset=utf-8;');
-  response.write('<h1>Hi, Vitali</h1>');
-  response.end();
+    request.on('data', (value) => {
+      data += value;
+    });
 
-  console.log(response);
+    request.on('end', () => {
+      if (data) {
+        fs.writeFileSync('data.json', data);
+        console.log('Success');
+      } else {
+        //Send failure response with statusCode 400 (Bad Request)
+      }
+    });
 
-  response.end(request.headers);
+    response.write(`Status code: ${response.statusCode}`);
+    response.end();
+  }
 };
 
 const server = http.createServer(requestHandler);
