@@ -14,14 +14,16 @@ const requestHandler = (request, response) => {
     request.on('end', () => {
       if (data) {
         fs.writeFileSync('data.json', data);
-        console.log('Success');
+
+        response.writeHead(200, { 'Content-Type': 'text/plain' });
+        response.write(`${response.statusCode} ${response.statusMessage}`);
+        response.end();
       } else {
-        //Send failure response with statusCode 400 (Bad Request)
+        response.writeHead(400, { 'Content-Type': 'text/plain' });
+        response.write(`${response.statusCode} ${response.statusMessage}`);
+        response.end();
       }
     });
-
-    response.write(`Status code: ${response.statusCode}`);
-    response.end();
   }
 };
 
