@@ -1,24 +1,49 @@
 const http = require('http');
-const port = 3000;
+const fs = require('fs');
 
-//request - информация о запросе
-//response - отпарвка ответа
+const port = process.env.PORT || 3000;
 
 const requestHandler = (request, response) => {
-  console.log(`url: ${request.url}`);
-  console.log(`method: ${request.method}`);
-  console.log(`user-agent: ${request.headers['user-agent']}`);
-  console.log(`user-agent: ${request.headers['user-agent']}`);
-  // console.log(request.headers);
+  if (request.url === '/nodejs') {
+    if (request.method === 'POST') {
+      let data = '';
 
-  response.setHeader('UserId', 1);
-  response.setHeader('Content-Type', 'text/html; charset=utf-8;');
-  response.write('<h1>Hi, Vitali</h1>');
-  response.end();
+      request.on('data', (value) => {
+        data += value;
+      });
 
-  console.log(response);
+      request.on('end', () => {
+        if (data) {
+          fs.writeFileSync('data.json', data);
 
-  response.end(request.headers);
+          response.statusCode = 200;
+          response.statusMessage = 'Success';
+          response.setHeader('Content-Type', 'text/plain');
+          response.write(
+            `Status code: ${response.statusCode} (${response.statusMessage})`
+          );
+          response.end();
+        } else {
+          response.writeHead(400, { 'Content-Type': 'text/plain' });
+          response.write(
+            `Status code: ${response.statusCode} (${response.statusMessage})`
+          );
+          response.end();
+        }
+      });
+    }
+
+    if (request.method === 'GET') {
+      fs.readFile('data.json', (err, data) => {
+        if (err) {
+          throw err
+        }
+        response.end(data);
+      });
+    }
+  } else {
+    response.end('No data');
+  }
 };
 
 const server = http.createServer(requestHandler);
